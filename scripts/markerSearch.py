@@ -2,13 +2,14 @@
 import rospy 
 from robot_nav.msg import Marker
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Bool
 from std_srvs.srv import SetBool, SetBoolResponse, Trigger, TriggerResponse
-from math import pi, sin
+from math import pi, sin, cos
 
 min_angle = 0.02
 
 increment = min_angle*10
-goal = [0,0]
+goal = [0,0,0]
 
 marker_detected = False
 marker_search = False
@@ -46,8 +47,8 @@ def start_search(msg):
     return response
 
 def detectCallback(msg):
-    global increment, goal_set, marker_aligned, marker_detected, marker_search, goal_stop, goal_reset, odom_reset
-    if not marker_search:
+    global increment, goal_set,goal_published, marker_aligned, marker_detected, marker_search, goal_stop, goal_reset, odom_reset
+    if not marker_search or goal_published:
         return
     increment = min_angle
     marker_aligned = msg.aligned
@@ -82,11 +83,12 @@ def detectCallback(msg):
         if msg.theta > 0:
             goal[0] = -1*goal[0]
         goal[1] = msg.distance*sin(abs(msg.theta)*pi/180.0)
+        goal[2] = msg.distance*cos(abs(msg.theta)*pi/180.0)
         goal_set = True
         rospy.loginfo("Goal Set: {}".format(goal))
 
 def posCallback(msg):
-    global rot, marker_search, goal_stop,goal_set, increment, pub, goal_published
+    global marker_search, goal_stop,goal_set, increment, pub, goal_published
     s_ang = msg
     if (not marker_search) or goal_published:
         return
@@ -103,6 +105,23 @@ def posCallback(msg):
         pub.publish(s_ang)
         rospy.loginfo("Goal Published: {}".format(s_ang))
 
+def goalArrived(msg):
+    global rot,goal_stop, goal_reset, odom_reset, goal, pub
+    if goal_published and (not rot):
+        goal_reset()
+        rospy.loginfo("Goal Reseted")
+        odom_reset()
+        rospy.loginfo("Odom Reseted Marker")
+        dock = Twist()
+        dock.linear.x = -1*goal[2]
+        if goal[0]>0:
+            dock.angular.z = 1.5708
+            pub.publish(dock)
+        else:
+            dock.angular.z = -1.5708
+            pub.publish(dock)
+        rot = True
+
 def listner():
     rospy.init_node('marker_search', anonymous=True)
 
@@ -112,6 +131,7 @@ def listner():
 
     rospy.Subscriber('/ria/odom/marker', Marker, detectCallback)
     rospy.Subscriber('/ria/odom/local', Twist, posCallback)
+    rospy.Subscriber('/ria/odom/goal_fb', Bool, goalArrived)
     m_search = rospy.Service('ria/odom/marker/search',SetBool, start_search)
     rospy.spin()
 
