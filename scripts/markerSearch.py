@@ -17,6 +17,8 @@ marker_aligned = False
 goal_set = False
 goal_published = False
 rot = False
+motion = False
+align_dist = False
 
 goal_stop = rospy.ServiceProxy('ria/odom/goal/stop', SetBool)
 goal_reset = rospy.ServiceProxy('ria/odom/goal/reset', Trigger)
@@ -25,15 +27,21 @@ odom_reset = rospy.ServiceProxy('ria/odom/reset', Trigger)
 pub = rospy.Publisher("/ria/odom/local/goal",Twist, queue_size=1)
 
 def start_search(msg):
-    global marker_search, marker_detected, marker_aligned, goal_set, goal_published
+    global min_angle, align_dist, increment, goal, marker_detected, marker_search, marker_aligned, goal_set, goal_published, rot, motion
     marker_search = msg.data
     if not marker_search:
+        min_angle = 0.02
+
+        increment = min_angle*10
+        goal = [0,0,0]
         marker_detected = False
+        marker_search = False
         marker_aligned = False
         goal_set = False
         goal_published = False
-        increment = min_angle*10
-        goal = [0,0]
+        rot = False
+        motion = False
+        align_dist = False
         try:
             marker_detected = True
             goal_stop(True)
@@ -47,8 +55,8 @@ def start_search(msg):
     return response
 
 def detectCallback(msg):
-    global increment, goal_set,goal_published, marker_aligned, marker_detected, marker_search, goal_stop, goal_reset, odom_reset
-    if not marker_search or goal_published:
+    global increment, goal_set, goal_published, marker_aligned, motion, marker_detected, marker_search, goal_stop, goal_reset, odom_reset
+    if not marker_search or goal_published or align_dist:
         return
     increment = min_angle
     marker_aligned = msg.aligned
@@ -78,7 +86,10 @@ def detectCallback(msg):
             #goal_stop(False)
         except rospy.ServiceException as e:
             print("Service call falied: %s"%e)
-
+        if msg.distance > 1.2 and not align_dist:
+            goal[1] = msg.distance - 1
+            align_dist = True
+            return
         goal[0] = ((90 - abs(msg.theta))*pi)/180.0
         if msg.theta > 0:
             goal[0] = -1*goal[0]
@@ -88,15 +99,22 @@ def detectCallback(msg):
         rospy.loginfo("Goal Set: {}".format(goal))
 
 def posCallback(msg):
-    global marker_search, goal_stop,goal_set, increment, pub, goal_published
+    global motion, marker_search, goal_stop,goal_set, increment, pub, goal_published, align_dist
     s_ang = msg
-    if (not marker_search) or goal_published:
+    if (not marker_search) or goal_published or motion:
         return
     if not goal_set:
         s_ang.angular.z += increment
         #goal_stop(False)
         pub.publish(s_ang)
-    else:
+    elif align_dist:
+        s_ang.angular.z = 0.0
+        s_ang.linear.x = goal[1]
+        goal_stop(False)
+        rospy.loginfo("Goal Started")
+        pub.publish(s_ang)
+        rospy.loginfo("Goal Published: {}".format(s_ang))
+    elif goal_set:
         goal_published = True
         s_ang.angular.z = goal[0]
         s_ang.linear.x = goal[1]
@@ -104,9 +122,12 @@ def posCallback(msg):
         rospy.loginfo("Goal Started")
         pub.publish(s_ang)
         rospy.loginfo("Goal Published: {}".format(s_ang))
+    motion = True
 
 def goalArrived(msg):
-    global rot,goal_stop, goal_reset, odom_reset, goal, pub
+    global motion, rot,goal_stop, goal_reset, odom_reset, goal, pub, goal_published, align_dist
+    motion = False
+    align_dist = False
     if goal_published and (not rot):
         goal_reset()
         rospy.loginfo("Goal Reseted")
