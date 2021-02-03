@@ -1,6 +1,7 @@
 <launch>
-  <node name="local_odom" pkg="robot_nav" type="odom.py" required="True"/>
-  <node name="goal_follower" pkg="robot_nav" type="odom_pub.py"/>
-  <node name="marker_search" pkg="robot_nav" type="markerSearch.py" output="screen"/>
+  <node name="local_odom" pkg="marker_navigation" type="odom.py" required="True"/>
+  <node name="goal_follower" pkg="marker_navigation" type="odom_pub.py"/>
+  <node name="marker_search" pkg="marker_navigation" type="markerSearch.py" output="screen"/>
+  <node name="hardware_controller" pkg="marker_navigation" type="ria_hardware_controller.py" output="screen"/>
 </launch>
 
