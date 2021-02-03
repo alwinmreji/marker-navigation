@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy 
-from robot_nav.msg import Marker
+from marker_navigation.msg import Marker
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 from std_srvs.srv import SetBool, SetBoolResponse, Trigger, TriggerResponse
@@ -94,7 +94,7 @@ def detectCallback(msg):
         if msg.theta > 0:
             goal[0] = -1*goal[0]
         goal[1] = msg.distance*sin(abs(msg.theta)*pi/180.0)
-        goal[2] = msg.distance*cos(abs(msg.theta)*pi/180.0)
+        goal[2] = msg.distance*cos(abs(msg.theta)*pi/180.0) - 0.15
         goal_set = True
         rospy.loginfo("Goal Set: {}".format(goal))
 
