@@ -45,6 +45,7 @@ def navCallback(msg):
             goal.angular.z = pi/2.0
         elif (cmd == 'LFT'):
             goal.angular.z = -1*(pi/2.0)
+        nav_pub.publish(goal)
     except:
         if (cmd == 'STOP'):
             result = stop(True)
