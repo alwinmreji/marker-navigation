@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy 
-from robot_nav.msg import Marker
+from aruco_nav.msg import Marker
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 from std_srvs.srv import SetBool, SetBoolResponse, Trigger, TriggerResponse
