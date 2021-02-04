@@ -54,7 +54,7 @@ def navCallback(msg):
         if (cmd == 'STOP'):
             result = stop(True)
             rospy.loginfo("Stopped Goal: {}".format(result))
-        elif (cmd == 'DOCK'):
+        elif (cmd == 'CHARG'):
             result = dock(True)
             rospy.loginfo("Marker Search Started: {}".format(result))
         elif (cmd == 'RGT'):
