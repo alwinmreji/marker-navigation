@@ -3,7 +3,7 @@ import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 from math import pi
-from std_srvs.srv import SetBool
+from std_srvs.srv import SetBool, Trigger
 import serial
 
 arduino = serial.Serial('/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0',9600, timeout=.1)
