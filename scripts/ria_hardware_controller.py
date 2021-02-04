@@ -32,10 +32,10 @@ def cmdCallback(msg):
 
 def navCallback(msg):
     global nav_pub, value, stop, dock
-    cmd = msg.data.split(" ").[0]
+    cmd = msg.data.split(" ")[0]
     goal = Twist()
     try:
-        val = float(msg.data.split(" ").[1])
+        val = float(msg.data.split(" ")[1])
         if (cmd == 'FWD'):
             goal.linear.x = val
         elif (cmd == 'BCK'):
