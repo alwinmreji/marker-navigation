@@ -11,6 +11,8 @@ value = {'EAR_ON':'3','EAR_OFF':'4','SKRT_ON':'1','SKRT_OFF':'2','EAR_FD':'7','E
 nav_pub = rospy.Publisher('/ria/odom/local/goal', Twist, queue_size=1)
 stop = rospy.ServiceProxy('/ria/odom/goal/stop',SetBool)
 dock = rospy.ServiceProxy('ria/odom/marker/search',SetBool)
+goal_reset = rospy.ServiceProxy('ria/odom/goal/reset', Trigger)
+odom_reset = rospy.ServiceProxy('ria/odom/reset', Trigger)
 
 def cmdCallback(msg):
     global value, arduino
@@ -31,7 +33,9 @@ def cmdCallback(msg):
         arduino.write(value[cmd].encode())
 
 def navCallback(msg):
-    global nav_pub, value, stop, dock
+    global nav_pub, value, stop, dock, goal_reset, odom_reset
+    goal_reset()
+    odom_reset()
     cmd = msg.data.split(" ")[0]
     goal = Twist()
     try:
