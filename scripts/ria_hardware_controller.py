@@ -53,6 +53,12 @@ def navCallback(msg):
         elif (cmd == 'DOCK'):
             result = dock(True)
             rospy.loginfo("Marker Search Started: {}".format(result))
+        elif (cmd == 'RGT'):
+            goal.angular.z = pi/2.0
+            nav_pub.publish(goal)
+        elif (cmd == 'LFT'):
+            goal.angular.z = -1*(pi/2.0)
+            nav_pub.publish(goal)
 
 def listener():
     global stop
