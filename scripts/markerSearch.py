@@ -31,7 +31,6 @@ def start_search(msg):
     marker_search = msg.data
     if not marker_search:
         min_angle = 0.02
-
         increment = min_angle*10
         goal = [0,0,0]
         marker_detected = False
@@ -83,7 +82,6 @@ def detectCallback(msg):
             rospy.loginfo("Goal Reseted Marker Aligned")
             odom_reset()
             rospy.loginfo("Odom Reseted Marker Aligned")
-            #goal_stop(False)
         except rospy.ServiceException as e:
             print("Service call falied: %s"%e)
         if msg.distance > 1.2 and not align_dist:
@@ -105,7 +103,6 @@ def posCallback(msg):
         return
     if not goal_set:
         s_ang.angular.z += increment
-        #goal_stop(False)
         pub.publish(s_ang)
     elif align_dist:
         s_ang.angular.z = 0.0
