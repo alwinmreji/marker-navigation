@@ -35,8 +35,6 @@ def start_search(msg):
         increment = min_angle*10
         goal = [0,0]
         try:
-            marker_detected = True
-            goal_stop(True)
             goal_reset()
             odom_reset()
         except rospy.ServiceException as e:
