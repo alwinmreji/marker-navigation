@@ -9,6 +9,13 @@ goal_fb = rospy.Publisher("/ria/odom/goal_fb", Bool, queue_size=1)
 goal = [0,0]
 rotate, stop, reset = True, False, False
 new_goal=False
+obstacle = False
+
+def obstacleCallback(msg):
+    global obstacle
+    obstacle = msg.data
+    if obstacle:
+        rospy.loginfo("[Nav]Obstacle Detected")
 
 def goal_stop(msg):
     global stop
@@ -76,7 +83,7 @@ def poseCallback(msg):
                lin.angular.z=-0.2
            else:
                lin.angular.z=0.2
-           if stop:
+           if stop or obstacle:
                pub.publish(zero)
            else:
                pub.publish(lin)
@@ -88,6 +95,7 @@ def listener():
     g_reset = rospy.Service('/ria/odom/goal/reset', Trigger, goal_reset)
     rospy.Subscriber('/ria/odom/local/goal',Twist,goalCallback)
     rospy.Subscriber('/ria/odom/local',Twist, poseCallback)
+    rospy.Subscriber('/ria/odom/obstacle', Bool, obstacleCallback)
     rospy.spin()
 
 if __name__=='__main__':
