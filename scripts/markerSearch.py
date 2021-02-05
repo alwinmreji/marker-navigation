@@ -55,7 +55,7 @@ def start_search(msg):
     return response
 
 def detectCallback(msg):
-    global increment, goal_set, goal_published, marker_aligned, motion, marker_detected, marker_search, goal_stop, goal_reset, odom_reset
+    global increment, goal_set, goal_published, marker_aligned, motion, marker_detected, marker_search, goal_stop, goal_reset, odom_reset, align_dist
     if not marker_search or goal_published or align_dist:
         return
     increment = min_angle
@@ -97,6 +97,7 @@ def detectCallback(msg):
         goal[2] = msg.distance*cos(abs(msg.theta)*pi/180.0) - 0.15
         goal_set = True
         rospy.loginfo("Goal Set: {}".format(goal))
+    motion = False
 
 def posCallback(msg):
     global motion, marker_search, goal_stop,goal_set, increment, pub, goal_published, align_dist
