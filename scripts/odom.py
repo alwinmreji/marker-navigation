@@ -45,7 +45,7 @@ def listener():
     rospy.init_node('ria_odom',anonymous=True) 
     rospy.Subscriber('/dynamixel_workbench/dynamixel_state',DynamixelStateList,odom)
     i_reset = rospy.Service('/ria/odom/reset', Trigger, reset_initial)
-    rate= rospy.Rate(50)
+    rate= rospy.Rate(20)
     while not rospy.is_shutdown():
         pose = Twist()
         pose.linear.x = linear
